@@ -427,9 +427,19 @@
       cursor: pointer;
     }
 
-    @media (max-width: 640px) {
-      footer {
-        margin-top: 64px !important;
+    @media (max-width: 768px) {
+      .container {
+        padding-left: max(24px, env(safe-area-inset-left)) !important;
+        padding-right: max(24px, env(safe-area-inset-right)) !important;
+      }
+      .section-header,
+      .toolbar,
+      .summary,
+      .grid,
+      .controls,
+      .footer-inner {
+        padding-left: 2px;
+        padding-right: 2px;
       }
     }
   </style>
