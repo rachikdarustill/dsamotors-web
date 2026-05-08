@@ -435,6 +435,12 @@
               </select>
             </div>
             <div class="field">
+              <label for="brandSelect">Бренд</label>
+              <select id="brandSelect">
+                <option value="">Все</option>
+              </select>
+            </div>
+            <div class="field">
               <label for="minPrice">Цена от, ₽</label>
               <input id="minPrice" type="number" min="0" step="1" placeholder="0">
             </div>
@@ -514,6 +520,7 @@
 
     const categorySelect = document.getElementById('categorySelect');
     const conditionSelect = document.getElementById('conditionSelect');
+    const brandSelect = document.getElementById('brandSelect');
     const minPriceInput = document.getElementById('minPrice');
     const maxPriceInput = document.getElementById('maxPrice');
     const sortSelect = document.getElementById('sortSelect');
@@ -594,6 +601,7 @@
       const oemIndex = Math.max(headers.findIndex(h => /^oem$|oem|артикул|partnumber/.test(h)), 13);
       const categoryIndex = Math.max(headers.findIndex(h => /category|категор/.test(h)), 0);
       const conditionIndex = Math.max(headers.findIndex(h => /condition|состояни/.test(h)), 1);
+      const brandIndex = Math.max(headers.findIndex(h => /brand|бренд|марка/.test(h)), 6);
       const priceIndex = Math.max(headers.findIndex(h => /price|цена/.test(h)), 10);
       const imageIndex = (() => {
         const idx = headers.findIndex(h => h === 'images1' || /^images1$/.test(h) || /image1|изображ/.test(h));
@@ -604,6 +612,7 @@
         const rawTitle = (titleIndex >= 0 && cols[titleIndex]) ? cols[titleIndex] : (cols[3] || cols[0] || '');
         const rawOEM = (oemIndex >= 0 && cols[oemIndex]) ? cols[oemIndex] : '';
         const rawCategory = (categoryIndex >= 0 && cols[categoryIndex]) ? cols[categoryIndex] : 'Запчасть';
+        const rawBrand = (brandIndex >= 0 && cols[brandIndex]) ? cols[brandIndex] : '';
         const rawPrice = (priceIndex >= 0 && cols[priceIndex]) ? cols[priceIndex] : '';
         const rawImage = (imageIndex >= 0 && cols[imageIndex]) ? cols[imageIndex] : '';
         const numericPrice = Number(String(rawPrice).replace(/[^\d.,]/g, '').replace(',', '.'));
@@ -613,6 +622,7 @@
           name: rawTitle || 'Деталь Mercedes‑Benz',
           category: rawCategory || 'Запчасть',
           condition: (conditionIndex >= 0 && cols[conditionIndex]) ? cols[conditionIndex] : '',
+          brand: rawBrand,
           price: Number.isFinite(numericPrice) ? numericPrice : 0,
           image: extractPrimaryImage(rawImage),
           oem: rawOEM,
@@ -630,6 +640,7 @@
             <div class="pill">${escapeHtml(item.category)}</div>
             <div class="product-title">${escapeHtml(item.name)}</div>
             <div><span class="price">${formatRub(item.price)}</span></div>
+            ${item.brand ? `<div style="font-size: 11px; color: #6a6c6d; margin-top: 6px;">Бренд: ${escapeHtml(item.brand)}</div>` : ''}
             ${item.oem ? `<div style="font-size: 11px; color: #8e9091; margin-top: 6px;">OEM: ${escapeHtml(item.oem)}</div>` : ''}
           </a>
         `;
@@ -711,6 +722,7 @@
         item.name || '',
         item.category || '',
         item.condition || '',
+        item.brand || '',
       ];
       return parts.join(' ').toLowerCase();
     }
@@ -719,6 +731,7 @@
       const q = String((searchInput && searchInput.value) || '').trim().toLowerCase();
       const cat = categorySelect ? String(categorySelect.value || '').trim() : '';
       const cond = conditionSelect ? String(conditionSelect.value || '').trim() : '';
+      const brand = brandSelect ? String(brandSelect.value || '').trim() : '';
 
       const minRaw = minPriceInput ? String(minPriceInput.value || '').trim() : '';
       const maxRaw = maxPriceInput ? String(maxPriceInput.value || '').trim() : '';
@@ -735,6 +748,9 @@
       }
       if (cond) {
         list = list.filter((item) => String(item.condition || '').trim() === cond);
+      }
+      if (brand) {
+        list = list.filter((item) => String(item.brand || '').trim() === brand);
       }
       if (min !== null && Number.isFinite(min)) {
         list = list.filter((item) => Number(item.price || 0) >= min);
@@ -784,8 +800,10 @@
         // Заполняем фильтры
         const categories = Array.from(new Set(allItems.map((x) => String(x.category || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'ru'));
         const conditions = Array.from(new Set(allItems.map((x) => String(x.condition || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'ru'));
+        const brands = Array.from(new Set(allItems.map((x) => String(x.brand || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'ru'));
         fillSelect(categorySelect, categories);
         fillSelect(conditionSelect, conditions);
+        fillSelect(brandSelect, brands);
 
         // Стартовый вывод: первые 200 (без фильтров)
         if (initialCategory && categorySelect) {
@@ -813,6 +831,7 @@
             if (searchInput) searchInput.value = '';
             if (categorySelect) categorySelect.value = '';
             if (conditionSelect) conditionSelect.value = '';
+            if (brandSelect) brandSelect.value = '';
             if (minPriceInput) minPriceInput.value = '';
             if (maxPriceInput) maxPriceInput.value = '';
             if (sortSelect) sortSelect.value = 'default';
