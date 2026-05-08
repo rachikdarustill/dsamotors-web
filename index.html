@@ -420,6 +420,21 @@
         .footer-col a:hover {
             color: var(--primary);
         }
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .footer-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            border: 1px solid var(--muted);
+            background: var(--white);
+            object-fit: contain;
+            padding: 6px;
+        }
         .copyright {
             border-top: 1px solid var(--muted);
             padding: 14px 0 max(14px, env(safe-area-inset-bottom));
@@ -674,8 +689,8 @@
     <footer>
         <div class="container footer-inner">
             <div class="footer-col">
-                <div class="brand" style="margin-bottom:10px;">
-                    <div class="brand-mark">DSA</div>
+                <div class="footer-brand">
+                    <img class="footer-logo" src="./logo.png" alt="DSA Motors">
                     <div class="brand-name">DSA Motors</div>
                 </div>
                 <p style="margin:0;color:#6a6c6d;">Интернет-магазин запчастей</p>

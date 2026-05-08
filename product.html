@@ -262,9 +262,71 @@
     }
     .empty strong { color: var(--text); }
 
+    footer {
+      margin-top: 28px;
+      background: var(--white);
+      border-top: 1px solid var(--muted);
+    }
+    .footer-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 16px;
+      padding: 24px 0;
+    }
+    .footer-col h5 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: #6a6c6d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .footer-col .non-clickable {
+      display: block;
+      padding: 6px 0;
+      color: var(--text);
+      cursor: default;
+      text-decoration: none;
+      pointer-events: none;
+    }
+    .footer-col a {
+      display: block;
+      padding: 6px 0;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .footer-col a:hover { color: var(--primary); }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .footer-logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 10px;
+      border: 1px solid var(--muted);
+      background: var(--white);
+      object-fit: contain;
+      padding: 6px;
+    }
+    .brand-name {
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--text);
+    }
+    .copyright {
+      border-top: 1px solid var(--muted);
+      padding: 14px 0 max(14px, env(safe-area-inset-bottom));
+      font-size: 13px;
+      color: #6a6c6d;
+      text-align: center;
+    }
+
     @media (max-width: 960px) {
       .product { grid-template-columns: 1fr; }
       .thumbs { grid-template-columns: repeat(5, 1fr); }
+      .footer-inner { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 640px) {
       .breadcrumbs { font-size: 13px; margin: 10px 0 12px; gap: 8px; }
@@ -281,6 +343,8 @@
       .header-logo { width: 44px; height: 44px; }
       .header-phone { padding: 8px 12px; font-size: 14px; flex: 1; justify-content: center; }
       .panel-inner { padding: 14px; }
+      .footer-inner { grid-template-columns: 1fr; }
+      .brand-name { font-size: 20px; }
     }
   </style>
 </head>
@@ -306,7 +370,41 @@
     </div>
   </main>
 
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-col">
+        <div class="footer-brand">
+          <img class="footer-logo" src="./logo.png" alt="DSA Motors">
+          <div class="brand-name">DSA Motors</div>
+        </div>
+        <p style="margin:0;color:#6a6c6d;">Интернет-магазин запчастей</p>
+      </div>
+      <div class="footer-col">
+        <h5>Категории</h5>
+        <div id="footer-categories"></div>
+      </div>
+      <div class="footer-col">
+        <h5>Покупателям</h5>
+        <span class="non-clickable">Доставка и оплата</span>
+        <span class="non-clickable">Гарантия и возврат</span>
+      </div>
+      <div class="footer-col">
+        <h5>Контакты</h5>
+        <a href="mailto:support@dsamotors.com">support@dsamotors.com</a>
+        <a href="tel:89000013023">+7 (900) 001-30-23</a>
+      </div>
+    </div>
+    <div class="copyright">
+      © <span id="year"></span> DSA. Все права защищены.
+    </div>
+  </footer>
+
   <script>
+    const yearEl = document.getElementById('year');
+    const footerCategories = document.getElementById('footer-categories');
+
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
     function escapeHtml(text) {
       return String(text || '')
         .replace(/&/g, '&amp;')
@@ -338,6 +436,23 @@
         seen.add(key);
         return true;
       });
+    }
+
+    function renderFooterCategories(items) {
+      if (!footerCategories) return;
+      const counts = new Map();
+      items.forEach((item) => {
+        const category = String(item.category || '').trim();
+        if (!category) return;
+        counts.set(category, (counts.get(category) || 0) + 1);
+      });
+      const categories = Array.from(counts.entries())
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ru'))
+        .slice(0, 4);
+      footerCategories.innerHTML = categories.map(([category]) => {
+        const href = `./shop.html?category=${encodeURIComponent(category)}`;
+        return `<a href="${href}">${escapeHtml(category)}</a>`;
+      }).join('');
     }
 
     function parseCsv(csvText) {
@@ -469,10 +584,6 @@
     async function init() {
       const content = document.getElementById('content');
       const q = getQuery();
-      if (!q.i && !q.oem) {
-        content.innerHTML = renderEmpty('Не указан товар.', 'Откройте карточку из списка товаров на главной странице.');
-        return;
-      }
 
       try {
         const res = await fetch('./feed.csv', { cache: 'no-store' });
@@ -522,6 +633,12 @@
           oem: oemIndex >= 0 ? String(cols[oemIndex] || '').trim() : '',
           images: extractImages(cols, imageIndexes),
         })).filter((x) => x.title);
+        renderFooterCategories(items);
+
+        if (!q.i && !q.oem) {
+          content.innerHTML = renderEmpty('Не указан товар.', 'Откройте карточку из списка товаров на главной странице.');
+          return;
+        }
 
         let item = null;
         if (q.i !== null && q.i !== undefined && q.i !== '') {
