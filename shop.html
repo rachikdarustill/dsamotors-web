@@ -765,6 +765,22 @@
       }).join('');
     }
 
+    function normalizeSearchText(value) {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[^a-zа-я0-9]+/gi, ' ')
+        .trim();
+    }
+
+    function getSearchTokens(value) {
+      return normalizeSearchText(value).split(/\s+/).filter(Boolean);
+    }
+
+    function compactSearchText(value) {
+      return normalizeSearchText(value).replace(/\s+/g, '');
+    }
+
     function getTextHaystack(item) {
       const parts = [
         item.oem || '',
@@ -773,11 +789,24 @@
         item.condition || '',
         item.make || '',
       ];
-      return parts.join(' ').toLowerCase();
+      return parts.join(' ');
+    }
+
+    function matchesSearchQuery(item, query) {
+      const tokens = getSearchTokens(query);
+      if (!tokens.length) return true;
+
+      const haystack = getTextHaystack(item);
+      const normalizedHaystack = normalizeSearchText(haystack);
+      const compactHaystack = compactSearchText(haystack);
+      const compactQuery = compactSearchText(query);
+
+      return tokens.every((token) => normalizedHaystack.includes(token))
+        || (compactQuery.length > 1 && compactHaystack.includes(compactQuery));
     }
 
     function applyFilters() {
-      const q = String((searchInput && searchInput.value) || '').trim().toLowerCase();
+      const q = String((searchInput && searchInput.value) || '').trim();
       const cat = categorySelect ? String(categorySelect.value || '').trim() : '';
       const cond = conditionSelect ? String(conditionSelect.value || '').trim() : '';
       const brand = brandSelect ? String(brandSelect.value || '').trim() : '';
@@ -790,7 +819,7 @@
       let list = allItems.slice();
 
       if (q) {
-        list = list.filter((item) => getTextHaystack(item).includes(q));
+        list = list.filter((item) => matchesSearchQuery(item, q));
       }
       if (cat) {
         list = list.filter((item) => String(item.category || '').trim() === cat);

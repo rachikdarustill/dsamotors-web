@@ -999,10 +999,42 @@
         }
 
         // Поиск по OEM (столбец N)
+        function normalizeSearchText(value) {
+            return String(value || '')
+                .toLowerCase()
+                .replace(/ё/g, 'е')
+                .replace(/[^a-zа-я0-9]+/gi, ' ')
+                .trim();
+        }
+
+        function getSearchTokens(value) {
+            return normalizeSearchText(value).split(/\s+/).filter(Boolean);
+        }
+
+        function compactSearchText(value) {
+            return normalizeSearchText(value).replace(/\s+/g, '');
+        }
+
+        function matchesSearchQuery(item, query) {
+            const tokens = getSearchTokens(query);
+            if (!tokens.length) return false;
+
+            const haystack = [
+                item.oem || '',
+                item.name || '',
+                item.category || '',
+            ].join(' ');
+            const normalizedHaystack = normalizeSearchText(haystack);
+            const compactHaystack = compactSearchText(haystack);
+            const compactQuery = compactSearchText(query);
+
+            return tokens.every((token) => normalizedHaystack.includes(token))
+                || (compactQuery.length > 1 && compactHaystack.includes(compactQuery));
+        }
+
         function searchByOEM(query) {
             if (!query.trim()) return [];
-            const lowerQuery = query.trim().toLowerCase();
-            return allParts.filter(item => item.oem && item.oem.toLowerCase().includes(lowerQuery));
+            return allParts.filter(item => matchesSearchQuery(item, query));
         }
 
         // Показать результаты поиска
