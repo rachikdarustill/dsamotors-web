@@ -435,7 +435,7 @@
               </select>
             </div>
             <div class="field">
-              <label for="brandSelect">Бренд</label>
+              <label for="brandSelect">Бренд автомобиля</label>
               <select id="brandSelect">
                 <option value="">Все</option>
               </select>
@@ -601,7 +601,7 @@
       const oemIndex = Math.max(headers.findIndex(h => /^oem$|oem|артикул|partnumber/.test(h)), 13);
       const categoryIndex = Math.max(headers.findIndex(h => /category|категор/.test(h)), 0);
       const conditionIndex = Math.max(headers.findIndex(h => /condition|состояни/.test(h)), 1);
-      const brandIndex = Math.max(headers.findIndex(h => /brand|бренд|марка/.test(h)), 6);
+      const makeIndex = Math.max(headers.findIndex(h => /^make$|марка авто|марка автомобиля/.test(h)), 7);
       const priceIndex = Math.max(headers.findIndex(h => /price|цена/.test(h)), 10);
       const imageIndex = (() => {
         const idx = headers.findIndex(h => h === 'images1' || /^images1$/.test(h) || /image1|изображ/.test(h));
@@ -612,7 +612,7 @@
         const rawTitle = (titleIndex >= 0 && cols[titleIndex]) ? cols[titleIndex] : (cols[3] || cols[0] || '');
         const rawOEM = (oemIndex >= 0 && cols[oemIndex]) ? cols[oemIndex] : '';
         const rawCategory = (categoryIndex >= 0 && cols[categoryIndex]) ? cols[categoryIndex] : 'Запчасть';
-        const rawBrand = (brandIndex >= 0 && cols[brandIndex]) ? cols[brandIndex] : '';
+        const rawMake = (makeIndex >= 0 && cols[makeIndex]) ? cols[makeIndex] : '';
         const rawPrice = (priceIndex >= 0 && cols[priceIndex]) ? cols[priceIndex] : '';
         const rawImage = (imageIndex >= 0 && cols[imageIndex]) ? cols[imageIndex] : '';
         const numericPrice = Number(String(rawPrice).replace(/[^\d.,]/g, '').replace(',', '.'));
@@ -622,7 +622,7 @@
           name: rawTitle || 'Деталь Mercedes‑Benz',
           category: rawCategory || 'Запчасть',
           condition: (conditionIndex >= 0 && cols[conditionIndex]) ? cols[conditionIndex] : '',
-          brand: rawBrand,
+          make: rawMake,
           price: Number.isFinite(numericPrice) ? numericPrice : 0,
           image: extractPrimaryImage(rawImage),
           oem: rawOEM,
@@ -640,7 +640,7 @@
             <div class="pill">${escapeHtml(item.category)}</div>
             <div class="product-title">${escapeHtml(item.name)}</div>
             <div><span class="price">${formatRub(item.price)}</span></div>
-            ${item.brand ? `<div style="font-size: 11px; color: #6a6c6d; margin-top: 6px;">Бренд: ${escapeHtml(item.brand)}</div>` : ''}
+            ${item.make ? `<div style="font-size: 11px; color: #6a6c6d; margin-top: 6px;">Бренд авто: ${escapeHtml(item.make)}</div>` : ''}
             ${item.oem ? `<div style="font-size: 11px; color: #8e9091; margin-top: 6px;">OEM: ${escapeHtml(item.oem)}</div>` : ''}
           </a>
         `;
@@ -722,7 +722,7 @@
         item.name || '',
         item.category || '',
         item.condition || '',
-        item.brand || '',
+        item.make || '',
       ];
       return parts.join(' ').toLowerCase();
     }
@@ -750,7 +750,7 @@
         list = list.filter((item) => String(item.condition || '').trim() === cond);
       }
       if (brand) {
-        list = list.filter((item) => String(item.brand || '').trim() === brand);
+        list = list.filter((item) => String(item.make || '').trim() === brand);
       }
       if (min !== null && Number.isFinite(min)) {
         list = list.filter((item) => Number(item.price || 0) >= min);
@@ -800,7 +800,7 @@
         // Заполняем фильтры
         const categories = Array.from(new Set(allItems.map((x) => String(x.category || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'ru'));
         const conditions = Array.from(new Set(allItems.map((x) => String(x.condition || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'ru'));
-        const brands = Array.from(new Set(allItems.map((x) => String(x.brand || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'ru'));
+        const brands = Array.from(new Set(allItems.map((x) => String(x.make || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'ru'));
         fillSelect(categorySelect, categories);
         fillSelect(conditionSelect, conditions);
         fillSelect(brandSelect, brands);
