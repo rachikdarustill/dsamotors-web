@@ -682,10 +682,7 @@
             </div>
             <div class="footer-col">
                 <h5>Категории</h5>
-                <span class="non-clickable">Двигатель (M‑серии)</span>
-                <span class="non-clickable">Тормозная система</span>
-                <span class="non-clickable">Подвеска и рулевое</span>
-                <span class="non-clickable">Электрика и датчики</span>
+                <div id="footer-categories"></div>
             </div>
             <div class="footer-col">
                 <h5>Покупателям</h5>
@@ -722,6 +719,7 @@
         const searchForm = document.getElementById('search');
         const searchInput = document.getElementById('searchInput');
         const categoriesGrid = document.getElementById('categories-grid');
+        const footerCategories = document.getElementById('footer-categories');
         const popularGrid = document.getElementById('popular-grid');
         const popularTitle = document.getElementById('popularTitle');
         const catalogLink = document.getElementById('catalogLink');
@@ -864,8 +862,7 @@
             popularGrid.insertAdjacentHTML('beforeend', renderCards(items));
         }
 
-        function renderCategories(items) {
-            if (!categoriesGrid) return;
+        function getSortedCategories(items) {
             const counts = new Map();
             items.forEach((item) => {
                 const category = String(item.category || '').trim();
@@ -873,8 +870,13 @@
                 counts.set(category, (counts.get(category) || 0) + 1);
             });
 
-            const categories = Array.from(counts.entries())
+            return Array.from(counts.entries())
                 .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ru'));
+        }
+
+        function renderCategories(items) {
+            if (!categoriesGrid) return;
+            const categories = getSortedCategories(items);
 
             if (!categories.length) {
                 categoriesGrid.innerHTML = '<div class="no-results">Категории не найдены.</div>';
@@ -889,6 +891,15 @@
                         <div class="product-title">${count.toLocaleString('ru-RU')} товаров</div>
                     </a>
                 `;
+            }).join('');
+        }
+
+        function renderFooterCategories(items) {
+            if (!footerCategories) return;
+            const categories = getSortedCategories(items).slice(0, 4);
+            footerCategories.innerHTML = categories.map(([category]) => {
+                const href = `./shop.html?category=${encodeURIComponent(category)}`;
+                return `<a href="${href}">${escapeHtml(category)}</a>`;
             }).join('');
         }
 
@@ -961,6 +972,7 @@
 
             const initialItems = shuffle(popularSourceItems).slice(0, POPULAR_COUNT);
             renderCategories(popularSourceItems);
+            renderFooterCategories(popularSourceItems);
             renderPopular(initialItems);
         }
 
