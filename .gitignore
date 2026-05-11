@@ -1,0 +1,12 @@
+node_modules
+.nuxt
+.output
+dist
+coverage
+.env
+.env.*
+!.env.example
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+infra/certbot/conf
+infra/certbot/www/.well-known
