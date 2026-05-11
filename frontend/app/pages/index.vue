@@ -17,20 +17,19 @@ watch(q, async () => {
     <section class="hero">
       <div class="container hero-grid">
         <div class="hero-card">
-          <h1>Оплата запчастей онлайн через Точку</h1>
+          <h1>DSA Motors</h1>
           <p>
-            Каталог переносится на новую архитектуру с SSR-витриной, backend API,
-            платёжными ссылками и чеками 54-ФЗ.
+            Оригинальные автозапчасти из Японии.
           </p>
         </div>
         <div class="stats">
           <div class="panel">
-            <strong>Стек</strong>
-            <p class="note">Nuxt 3, NestJS, PostgreSQL, nginx, certbot</p>
+            <strong>Доставка</strong>
+            <p class="note">...</p>
           </div>
           <div class="panel">
             <strong>Оплата</strong>
-            <p class="note">Точка API + платёжная ссылка + чек 54-ФЗ</p>
+            <p class="note">...</p>
           </div>
         </div>
       </div>
