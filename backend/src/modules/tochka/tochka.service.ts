@@ -11,6 +11,28 @@ interface CreatePaymentLinkInput {
   receipt: Record<string, unknown>;
 }
 
+function extractStringByKeys(value: unknown, keys: string[]): string | null {
+  if (!value || typeof value !== 'object') return null;
+
+  const record = value as Record<string, unknown>;
+
+  for (const key of keys) {
+    const direct = record[key];
+    if (typeof direct === 'string' && direct.trim()) {
+      return direct;
+    }
+  }
+
+  for (const nested of Object.values(record)) {
+    if (nested && typeof nested === 'object') {
+      const found = extractStringByKeys(nested, keys);
+      if (found) return found;
+    }
+  }
+
+  return null;
+}
+
 @Injectable()
 export class TochkaService {
   private readonly logger = new Logger(TochkaService.name);
@@ -98,20 +120,26 @@ export class TochkaService {
     }
 
     const data = await response.json() as Record<string, any>;
-
     const responseData = data?.Data ?? data?.data ?? data;
-    const operationId = String(
-      responseData?.operationId
-      ?? responseData?.OperationId
-      ?? responseData?.paymentOperationId
-      ?? input.paymentLinkId,
+    const operationId = extractStringByKeys(responseData, [
+      'operationId',
+      'OperationId',
+      'paymentOperationId',
+      'id',
+    ]) || input.paymentLinkId;
+    const paymentUrl = extractStringByKeys(responseData, [
+      'paymentLinkUrl',
+      'paymentUrl',
+      'link',
+      'redirectUrl',
+      'url',
+      'formUrl',
+    ]) || successUrl;
+
+    this.logger.log(
+      `Tochka response mapped: operationId=${operationId}, paymentUrl=${paymentUrl}`,
     );
-    const paymentUrl = String(
-      responseData?.paymentLinkUrl
-      ?? responseData?.paymentUrl
-      ?? responseData?.link
-      ?? successUrl,
-    );
+    this.logger.debug(`Tochka raw response: ${JSON.stringify(responseData)}`);
 
     return {
       operationId,
