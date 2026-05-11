@@ -44,22 +44,32 @@ export class TochkaService {
     const successUrl = this.configService.get<string>('TOCHKA_SUCCESS_URL');
     const failUrl = this.configService.get<string>('TOCHKA_FAIL_URL');
     const apiBase = this.configService.get<string>('TOCHKA_API_BASE');
+    const useReceipt = String(this.configService.get<string>('TOCHKA_USE_RECEIPT', 'true')) === 'true';
+    const createPaymentNoReceiptPath = this.configService.get<string>('TOCHKA_CREATE_PAYMENT_NO_RECEIPT_PATH', '/payments');
     const createPaymentPath = this.configService.get<string>('TOCHKA_CREATE_PAYMENT_PATH', '/payments-with-receipt');
     const jwt = this.configService.get<string>('TOCHKA_JWT');
+    const customerCode = this.configService.get<string>('TOCHKA_CUSTOMER_CODE');
+    const merchantId = this.configService.get<string>('TOCHKA_MERCHANT_ID');
+
+    const baseData = {
+      amount: input.amount,
+      purpose: input.product.title,
+      paymentLinkId: input.paymentLinkId,
+      redirectUrl: successUrl,
+      failRedirectUrl: failUrl,
+      callbackUrl,
+      customerCode,
+      merchantId,
+      paymentMode: ['card', 'sbp'],
+    };
 
     const payload = {
-      Data: {
-        amount: input.amount,
-        purpose: input.product.title,
-        paymentLinkId: input.paymentLinkId,
-        redirectUrl: successUrl,
-        failRedirectUrl: failUrl,
-        callbackUrl,
-        customerCode: this.configService.get<string>('TOCHKA_CUSTOMER_CODE'),
-        merchantId: this.configService.get<string>('TOCHKA_MERCHANT_ID'),
-        paymentMode: ['card', 'sbp'],
-        receipt: input.receipt,
-      },
+      Data: useReceipt
+        ? {
+            ...baseData,
+            receipt: input.receipt,
+          }
+        : baseData,
     };
 
     if (!jwt || !apiBase) {
@@ -71,7 +81,8 @@ export class TochkaService {
       };
     }
 
-    const response = await fetch(`${apiBase}${createPaymentPath}`, {
+    const requestPath = useReceipt ? createPaymentPath : createPaymentNoReceiptPath;
+    const response = await fetch(`${apiBase}${requestPath}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${jwt}`,
