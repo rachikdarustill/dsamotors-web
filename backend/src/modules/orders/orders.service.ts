@@ -86,7 +86,7 @@ export class OrdersService {
 
     return {
       ...order,
-      productSnapshot: order.productSnapshot as Product,
+      productSnapshot: order.productSnapshot as unknown as Product,
       receiptPayload: order.receiptPayload as Record<string, unknown>,
     };
   }
